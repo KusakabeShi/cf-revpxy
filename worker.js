@@ -28,37 +28,38 @@ addEventListener("fetch", event => {
     var request = event.request
     var url = new URL(event.request.url);
     for (const [s_domain, s_target] of Object.entries(reverse)) {
-        //   console.log(url.host)
+        // console.log(url.host)
         if (url.host.endsWith(s_domain)) {
             target = reverse[s_domain];
             target.f_host = s_domain;
-            //   console.log("Match: " + s_domain)
+            // console.log("Match: " + s_domain)
             break;
         } else {
-            //   console.log("Not Match: " + s_domain)
+            // console.log("Not Match: " + s_domain)
             continue;
         }
     }
 
     if (target.f_host == undefined) {
-        return event.respondWith(new Response("Error"));
+        return event.respondWith(new Response("Not found",{
+            status: 404,
+        }));
     }
 
     url.protocol = target.protocol;
     url.host = target.host;
 
     if (url.pathname in target.reverse) {
-        url.pathname = target.reverse[url.pathname]
+        url = new URL(target.reverse[url.pathname])
     }
 
 
     const modifiedRequest = new Request(url, {
         body: request.body,
         headers: request.headers,
-        method: request.method,
-        redirect: request.redirect
+        method: request.method
     })
-    //event.passThroughOnException();
+    event.passThroughOnException();
     return event.respondWith(handleRequest(modifiedRequest));
 })
 
@@ -86,6 +87,7 @@ function cfEncodeEmail(email, key = 0) {
 }
 
 async function handleRequest(req) {
+    //console.log("fetching " + req.url)
     var response = await fetch(req);
 
     let contype = response.headers.get("Content-Type")
@@ -93,8 +95,6 @@ async function handleRequest(req) {
     if (contype != null && contype.includes("json") || contype.includes("html") || contype.includes("text") || contype.includes("javascript")) {
         var html = await response.text();
         // console.log(html)
-        // var orig_html = html;
-
         allemail = [...html.matchAll(new RegExp("data-cfemail=\"([a-z0-9]+)\"", "g"))].concat([...html.matchAll(new RegExp("email-protection#([a-z0-9]+)\"", "g"))])
         // console.log(allemail)
         replaces_add = {}
@@ -114,11 +114,12 @@ async function handleRequest(req) {
         target.html = html;
         // Simple replacement regex
         for (const [rs, rd] of Object.entries(target.replaces)) {
-            //   console.log("replace " + rs + " to " + rd)
+            //console.log("replace " + rs + " to " + rd)
             html = html.replaceAll(rs, rd);
         }
         // console.log("replace " + target.host + " to " + target.f_host)
         html = html.replaceAll(target.host, target.f_host);
+        // console.log(html)
         // return modified response
         return new Response(html, {
             headers: response.headers
