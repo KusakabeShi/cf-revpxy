@@ -1,27 +1,28 @@
 reverse = {
-  "uwiki.kskb.eu.org": {           // Domain of the cf worker
-      "host": "en.wikipedia.org",  // Target domain
-      "protocol": "https",         // HTTP or HTTPS, protocol of the original site
-      "replaces": {                //Replace string for all json/html/text/javascript through this proxy
-          "Wiki": "Uncyclo",
-      },
-      "reverse": {                 // Additional reverse proxy for for custom resource, such as picture
-          "/static/images/project-logos/enwiki.png": "https://images.uncyclomedia.co/uncyclopedia/en/b/bc/Wiki.png"
-      }
-  },
-  "revdemo.kskb.eu.org": {
-      "host": "www.example.com",
-      "protocol": "https",
-      "replaces": {
-          "Example": "Demo",
-          "Domain": "Site",
-          "domain": "site",
-          "More": "Less",
-          "https://www.iana.org/domains/example": "https://github.com/KusakabeSi/cf-revpxy"
-      },
-      "reverse": {}
-  }
+    "uwiki.kskb.eu.org": {           // Domain of the cf worker
+        "host": "en.wikipedia.org",  // Target domain
+        "protocol": "https",         // HTTP or HTTPS, protocol of the original site
+        "replaces": {                //Replace string for all json/html/text/javascript through this proxy
+            "Wiki": "Uncyclo",
+        },
+        "reverse": {                 // Additional reverse proxy for for custom resource, such as picture
+            "/static/images/project-logos/enwiki.png": "https://images.uncyclomedia.co/uncyclopedia/en/b/bc/Wiki.png"
+        }
+    },
+    "revdemo.kskb.eu.org": {
+        "host": "www.example.com",
+        "protocol": "https",
+        "replaces": {
+            "Example": "Demo",
+            "Domain": "Site",
+            "domain": "site",
+            "More": "Less",
+            "https://www.iana.org/sites/example": "https://github.com/KusakabeSi/cf-revpxy"
+        },
+        "reverse": {}
+    }
 }
+
 target = {} //Temporary variable, do not edit
 
 addEventListener("fetch", event => {
@@ -92,7 +93,7 @@ async function handleRequest(req) {
 
     let contype = response.headers.get("Content-Type")
     // Author: Kusakabe Si
-    if (contype != null && contype.includes("json") || contype.includes("html") || contype.includes("text") || contype.includes("javascript")) {
+    if (contype != null && (contype.includes("json") || contype.includes("html") || contype.includes("text") || contype.includes("javascript"))) {
         var html = await response.text();
         // console.log(html)
         allemail = [...html.matchAll(new RegExp("data-cfemail=\"([a-z0-9]+)\"", "g"))].concat([...html.matchAll(new RegExp("email-protection#([a-z0-9]+)\"", "g"))])
