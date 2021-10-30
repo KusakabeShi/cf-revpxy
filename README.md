@@ -6,8 +6,11 @@ A reverse proxy for cloudflare worker with some additional features:
 3. [cloudflare email-protection](https://support.cloudflare.com/hc/en-us/articles/200170016-What-is-Email-Address-Obfuscation-) bypass.
 
 ## Demo
-[https://uwiki.kskb.eu.org/](https://uwiki.kskb.eu.org/)  
-[https://revdemo.kskb.eu.org/](https://revdemo.kskb.eu.org/)  
+1. https://uwiki.kskb.eu.org 
+1. https://https://revdemo.kskb.eu.org
+1. https://blog.kskb.eu.org
+1. https://blog.wget.date
+1. https://42status.kskb.eu.org
 
 ## How to use:
 
