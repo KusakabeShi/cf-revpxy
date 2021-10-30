@@ -1,3 +1,4 @@
+
 reverse = {
     "uwiki.kskb.eu.org": {           // Domain of the cf worker
         "host": "en.wikipedia.org",  // Target domain
@@ -7,7 +8,8 @@ reverse = {
         },
         "reverse": {                 // Additional reverse proxy for for custom resource, such as picture
             "/static/images/project-logos/enwiki.png": "https://images.uncyclomedia.co/uncyclopedia/en/b/bc/Wiki.png"
-        }
+        },
+        "redirect": {}
     },
     "revdemo.kskb.eu.org": {
         "host": "www.example.com",
@@ -19,7 +21,37 @@ reverse = {
             "More": "Less",
             "https://www.iana.org/sites/example": "https://github.com/KusakabeSi/cf-revpxy"
         },
-        "reverse": {}
+        "reverse": {},
+        "redirect": {}
+    },
+    "blog.kskb.eu.org": {
+        "host": "www.kskb.eu.org",
+        "protocol": "https",
+        "replaces": {},
+        "reverse": {},
+        "redirect": {}
+    },
+    "blog.wget.date": {
+        "host": "www.kskb.eu.org",
+        "protocol": "https",
+        "replaces": {},
+        "reverse": {},
+        "redirect": {}
+    },
+    "42status.kskb.eu.org": {
+        "host": "stats.uptimerobot.com",
+        "protocol": "https",
+        "replaces": {
+            'pageUrl=': 'pageUrl="https://42status.kskb.eu.org/jB082hYYXv";',
+        },
+        "reverse": {
+            "/": "https://stats.uptimerobot.com/jB082hYYXv",
+        },
+        "redirect": {
+            "/assets/sounds/notification.mp3": "https://stats.uptimerobot.com/assets/sounds/notification.mp3",
+            "/test3002": "https://google.com",
+            "/jB082hYYXv": "/"
+        }
     }
 }
 
@@ -49,6 +81,16 @@ addEventListener("fetch", event => {
 
     url.protocol = target.protocol;
     url.host = target.host;
+
+    if (url.pathname in target.redirect) {
+        //console.log(" 302 to " + target.redirect[url.pathname])
+        return event.respondWith(new Response("",{
+            status: 302,
+            headers:{
+                "Location": target.redirect[url.pathname],
+            }
+        }))
+    }
 
     if (url.pathname in target.reverse) {
         url = new URL(target.reverse[url.pathname])
