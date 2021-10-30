@@ -7,7 +7,7 @@ A reverse proxy for cloudflare worker with some additional features:
 
 ## Demo
 1. https://uwiki.kskb.eu.org 
-1. https://https://revdemo.kskb.eu.org
+1. https://revdemo.kskb.eu.org
 1. https://blog.kskb.eu.org
 1. https://blog.wget.date
 1. https://42status.kskb.eu.org
