@@ -1,59 +1,5 @@
 
-reverse = {
-    "uwiki.kskb.eu.org": {           // Domain of the cf worker
-        "host": "en.wikipedia.org",  // Target domain
-        "protocol": "https",         // HTTP or HTTPS, protocol of the original site
-        "replaces": {                //Replace string for all json/html/text/javascript through this proxy
-            "Wiki": "Uncyclo",
-        },
-        "reverse": {                 // Additional reverse proxy for for custom resource, such as picture
-            "/static/images/project-logos/enwiki.png": "https://images.uncyclomedia.co/uncyclopedia/en/b/bc/Wiki.png"
-        },
-        "redirect": {}
-    },
-    "revdemo.kskb.eu.org": {
-        "host": "www.example.com",
-        "protocol": "https",
-        "replaces": {
-            "Example": "Demo",
-            "Domain": "Site",
-            "domain": "site",
-            "More": "Less",
-            "https://www.iana.org/sites/example": "https://github.com/KusakabeSi/cf-revpxy"
-        },
-        "reverse": {},
-        "redirect": {}
-    },
-    "blog.kskb.eu.org": {
-        "host": "www.kskb.eu.org",
-        "protocol": "https",
-        "replaces": {},
-        "reverse": {},
-        "redirect": {}
-    },
-    "blog.wget.date": {
-        "host": "www.kskb.eu.org",
-        "protocol": "https",
-        "replaces": {},
-        "reverse": {},
-        "redirect": {}
-    },
-    "42status.kskb.eu.org": {
-        "host": "stats.uptimerobot.com",
-        "protocol": "https",
-        "replaces": {
-            'pageUrl=': 'pageUrl="https://42status.kskb.eu.org/jB082hYYXv";',
-        },
-        "reverse": {
-            "/": "https://stats.uptimerobot.com/jB082hYYXv",
-        },
-        "redirect": {
-            "/assets/sounds/notification.mp3": "https://stats.uptimerobot.com/assets/sounds/notification.mp3",
-            "/test3002": "https://google.com",
-            "/jB082hYYXv": "/"
-        }
-    }
-}
+reverse = {}
 
 target = {} //Temporary variable, do not edit
 
@@ -93,9 +39,18 @@ addEventListener("fetch", event => {
     }
 
     if (url.pathname in target.reverse) {
-        url = new URL(target.reverse[url.pathname])
+        reverse_target = target.reverse[url.pathname]
+        if (reverse_target.startsWith("http") ) {
+            url = new URL(reverse_target)
+        } else{
+            url.pathname = reverse_target
+        }
+        
     }
 
+    if (target.path_prefix) {
+        url.pathname = target.path_prefix +  url.pathname
+    }
 
     const modifiedRequest = new Request(url, {
         body: request.body,
@@ -140,23 +95,23 @@ async function handleRequest(req) {
         // console.log(html)
         allemail = [...html.matchAll(new RegExp("data-cfemail=\"([a-z0-9]+)\"", "g"))].concat([...html.matchAll(new RegExp("email-protection#([a-z0-9]+)\"", "g"))])
         // console.log(allemail)
-        replaces_add = {}
+        replace_add = {}
         for (const [_, org_cf_email] of allemail) {
             org_cf_email_decode = cfDecodeEmail(org_cf_email)
-            for (const [rs, rd] of Object.entries(target.replaces)) {
+            for (const [rs, rd] of Object.entries(target.replace)) {
                 org_cf_email_decode = org_cf_email_decode.replaceAll(rs, rd);
             }
             org_cf_email_decode = org_cf_email_decode.replaceAll(target.host, target.f_host);
-            replaces_add[org_cf_email] = cfEncodeEmail(org_cf_email_decode)
+            replace_add[org_cf_email] = cfEncodeEmail(org_cf_email_decode)
         }
-        // console.log(replaces_add)
-        target.replaces = {
-            ...target.replaces,
-            ...replaces_add
+        // console.log(replace_add)
+        target.replace = {
+            ...target.replace,
+            ...replace_add
         }
         target.html = html;
         // Simple replacement regex
-        for (const [rs, rd] of Object.entries(target.replaces)) {
+        for (const [rs, rd] of Object.entries(target.replace)) {
             //console.log("replace " + rs + " to " + rd)
             html = html.replaceAll(rs, rd);
         }
